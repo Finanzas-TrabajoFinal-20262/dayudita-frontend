@@ -27,8 +27,6 @@ const emptyCredit = {
   paymentMode: 'INSTALLMENTS',
   porcentajeCuotaInicial: 0,
   numeroMeses: 4,
-  periodosGraciaTotal: 0,
-  periodosGraciaParcial: 0,
   items: [{ code: '', quantity: 1 }]
 }
 
@@ -147,8 +145,6 @@ export default function StoreCreditsPage() {
         ? Number(creditForm.porcentajeCuotaInicial) / 100
         : undefined,
       numeroMeses: creditForm.paymentMode === 'INSTALLMENTS' ? Number(creditForm.numeroMeses) : undefined,
-      periodosGraciaTotal: creditForm.paymentMode === 'INSTALLMENTS' ? Number(creditForm.periodosGraciaTotal) : undefined,
-      periodosGraciaParcial: creditForm.paymentMode === 'INSTALLMENTS' ? Number(creditForm.periodosGraciaParcial) : undefined,
       items
     }
   }
@@ -317,24 +313,6 @@ export default function StoreCreditsPage() {
                       onChange={event => setCreditForm({ ...creditForm, numeroMeses: event.target.value })}
                     >
                       {[1, 2, 3, 4].map(value => <option key={value} value={value}>{value}</option>)}
-                    </select>
-                  </label>
-                  <label>
-                    Periodos de gracia total
-                    <select
-                      value={creditForm.periodosGraciaTotal}
-                      onChange={event => setCreditForm({ ...creditForm, periodosGraciaTotal: event.target.value })}
-                    >
-                      {[0, 1, 2].map(value => <option key={value} value={value}>{value}</option>)}
-                    </select>
-                  </label>
-                  <label>
-                    Periodos de gracia parcial
-                    <select
-                      value={creditForm.periodosGraciaParcial}
-                      onChange={event => setCreditForm({ ...creditForm, periodosGraciaParcial: event.target.value })}
-                    >
-                      {[0, 1, 2].map(value => <option key={value} value={value}>{value}</option>)}
                     </select>
                   </label>
                 </>

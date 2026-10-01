@@ -13,7 +13,6 @@ function percent(value) {
 
 const TYPE_LABEL = {
   TOTAL: 'T',
-  PARTIAL: 'P',
   STANDARD: 'S'
 }
 
@@ -43,6 +42,11 @@ export default function FrenchScheduleTable({ plan, showPaymentAction, onPay }) 
         <p>
           Quincenal · {plan.paymentPeriodDays || 15} días · {plan.installmentCount} cuotas
           {' '}· TEA {percent(plan.teaPactada)} · TEQ {percent(plan.teq)}
+        </p>
+        <p>
+          {plan.diasGraciaTotal > 0
+            ? `Gracia total: ${plan.diasGraciaTotal} día${plan.diasGraciaTotal === 1 ? '' : 's'} hasta la primera fecha de corte (15 o 30)`
+            : 'Sin gracia total en este crédito'}
         </p>
       </div>
 

@@ -43,7 +43,6 @@ export default function StoreCreditPolicyPage() {
         teaMinima: asDecimal(form.teaMinima),
         teaMaxima: asDecimal(form.teaMaxima),
         plazoMaximoMeses: Number(form.plazoMaximoMeses),
-        maxPeriodosGracia: Number(form.maxPeriodosGracia),
         otorgaGracia: form.otorgaGracia
       })
 
@@ -82,6 +81,7 @@ export default function StoreCreditPolicyPage() {
         <span>Moneda <strong>{form.currency}</strong></span>
         <span>Año comercial <strong>{form.commercialYearDays} días</strong></span>
         <span>Cuotas <strong>cada {form.paymentPeriodDays} días</strong></span>
+        <span>Fechas de corte <strong>15 y 30 de cada mes</strong></span>
       </div>
 
       <form className="finance-form" onSubmit={save}>
@@ -135,23 +135,13 @@ export default function StoreCreditPolicyPage() {
               {[1, 2, 3, 4].map(value => <option key={value} value={value}>{value}</option>)}
             </select>
           </label>
-          <label>
-            Máximo de periodos de gracia
-            <input
-              type="number"
-              min="0"
-              value={form.maxPeriodosGracia}
-              onChange={event => updateField('maxPeriodosGracia', event.target.value)}
-              required
-            />
-          </label>
           <label className="checkbox-label">
             <input
               type="checkbox"
               checked={Boolean(form.otorgaGracia)}
               onChange={event => updateField('otorgaGracia', event.target.checked)}
             />
-            Otorga periodos de gracia
+            Otorga gracia total por fecha de corte (15 y 30 de cada mes)
           </label>
         </div>
         <button className="primary-button" type="submit">Guardar</button>
