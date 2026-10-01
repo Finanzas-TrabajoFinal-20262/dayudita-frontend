@@ -13,11 +13,11 @@ const menuByRole = {
   STORE_ADMIN: [
     { to: '/store/clients', label: 'CLIENTES' },
     { to: '/store/credits', label: 'CRÉDITOS' },
+    { to: '/store/credit-policy', label: 'POLÍTICA DE CRÉDITO' },
     { to: '/store/profile', label: 'PERFIL' }
   ],
   SYSTEM_ADMIN: [
     { to: '/system/stores', label: 'TIENDAS' },
-    { to: '/system/finance', label: 'FINANZAS' },
     { to: '/system/profile', label: 'PERFIL' }
   ]
 }

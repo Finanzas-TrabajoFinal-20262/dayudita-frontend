@@ -21,29 +21,14 @@ function codeFor(product) {
   return product.code || `DAYU-${String(product.id).padStart(4, '0')}`
 }
 
-function nextCutoffDate(cutoffDay) {
-  const now = new Date()
-  let year = now.getFullYear()
-  let month = now.getMonth()
-
-  if (now.getDate() > cutoffDay) {
-    month += 1
-    if (month > 11) {
-      month = 0
-      year += 1
-    }
-  }
-
-  const lastDay = new Date(year, month + 1, 0).getDate()
-  const day = Math.min(cutoffDay, lastDay)
-  return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-}
-
 const emptyCredit = {
   clientId: '',
   purchaseDate: today(),
-  paymentMode: 'SINGLE_PAYMENT',
-  installmentCount: 4,
+  paymentMode: 'INSTALLMENTS',
+  porcentajeCuotaInicial: 0,
+  numeroMeses: 4,
+  periodosGraciaTotal: 0,
+  periodosGraciaParcial: 0,
   items: [{ code: '', quantity: 1 }]
 }
 
@@ -54,9 +39,9 @@ export default function StoreCreditsPage() {
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState(null)
   const [showCreditModal, setShowCreditModal] = useState(false)
-  const [showStatementModal, setShowStatementModal] = useState(false)
   const [creditForm, setCreditForm] = useState(emptyCredit)
-  const [statementForm, setStatementForm] = useState({ clientId: '', cutoffDate: '' })
+  const [preview, setPreview] = useState(null)
+  const [previewError, setPreviewError] = useState('')
   const [paymentDate, setPaymentDate] = useState(today())
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
@@ -73,11 +58,8 @@ export default function StoreCreditsPage() {
 
       const financeData = await Promise.all(
         clientData.map(async client => {
-          const [plans, statements] = await Promise.all([
-            api.getStoreCreditPlans(user.storeId, client.id),
-            api.getStoreStatements(user.storeId, client.id)
-          ])
-          return { client, plans, statements }
+          const plans = await api.getStoreCreditPlans(user.storeId, client.id)
+          return { client, plans }
         })
       )
 
@@ -96,10 +78,7 @@ export default function StoreCreditsPage() {
     const query = search.trim().toLowerCase()
 
     return records
-      .flatMap(record => [
-        ...record.plans.map(plan => ({ kind: 'plan', client: record.client, data: plan })),
-        ...record.statements.map(statement => ({ kind: 'statement', client: record.client, data: statement }))
-      ])
+      .flatMap(record => record.plans.map(plan => ({ client: record.client, data: plan })))
       .filter(row => {
         if (!query) return true
         const clientText = `${row.client.firstName} ${row.client.lastName} ${row.client.documentNumber}`
@@ -113,24 +92,9 @@ export default function StoreCreditsPage() {
       ...emptyCredit,
       clientId: firstClient ? String(firstClient.id) : ''
     })
+    setPreview(null)
+    setPreviewError('')
     setShowCreditModal(true)
-  }
-
-  function openStatementModal() {
-    const firstClient = records.find(record => record.client.active)?.client
-    setStatementForm({
-      clientId: firstClient ? String(firstClient.id) : '',
-      cutoffDate: firstClient ? nextCutoffDate(firstClient.cutoffDay) : ''
-    })
-    setShowStatementModal(true)
-  }
-
-  function changeStatementClient(clientId) {
-    const client = records.find(record => String(record.client.id) === clientId)?.client
-    setStatementForm({
-      clientId,
-      cutoffDate: client ? nextCutoffDate(client.cutoffDay) : ''
-    })
   }
 
   function updateItem(index, field, value) {
@@ -156,34 +120,59 @@ export default function StoreCreditsPage() {
     }))
   }
 
+  function buildItems() {
+    return creditForm.items.map(item => {
+      const typedCode = item.code.trim().toUpperCase()
+      const product = products.find(candidate => codeFor(candidate).toUpperCase() === typedCode)
+
+      if (!product) {
+        throw new Error(`No existe el producto ${item.code || '(sin código)'}`)
+      }
+
+      return {
+        productId: product.id,
+        quantity: Number(item.quantity)
+      }
+    })
+  }
+
+  function buildPurchasePayload() {
+    const items = buildItems()
+
+    return {
+      clientId: Number(creditForm.clientId),
+      purchaseDate: creditForm.purchaseDate,
+      paymentMode: creditForm.paymentMode,
+      porcentajeCuotaInicial: creditForm.paymentMode === 'INSTALLMENTS'
+        ? Number(creditForm.porcentajeCuotaInicial) / 100
+        : undefined,
+      numeroMeses: creditForm.paymentMode === 'INSTALLMENTS' ? Number(creditForm.numeroMeses) : undefined,
+      periodosGraciaTotal: creditForm.paymentMode === 'INSTALLMENTS' ? Number(creditForm.periodosGraciaTotal) : undefined,
+      periodosGraciaParcial: creditForm.paymentMode === 'INSTALLMENTS' ? Number(creditForm.periodosGraciaParcial) : undefined,
+      items
+    }
+  }
+
+  async function calculatePreview() {
+    setPreviewError('')
+    setPreview(null)
+
+    try {
+      const payload = buildPurchasePayload()
+      const plan = await api.simulatePurchase(user.storeId, payload)
+      setPreview(plan)
+    } catch (calcError) {
+      setPreviewError(calcError.message)
+    }
+  }
+
   async function createCredit(event) {
     event.preventDefault()
     setError('')
 
     try {
-      const items = creditForm.items.map(item => {
-        const typedCode = item.code.trim().toUpperCase()
-        const product = products.find(candidate => codeFor(candidate).toUpperCase() === typedCode)
-
-        if (!product) {
-          throw new Error(`No existe el producto ${item.code || '(sin código)'}`)
-        }
-
-        return {
-          productId: product.id,
-          quantity: Number(item.quantity)
-        }
-      })
-
-      await api.createPurchase(user.storeId, {
-        clientId: Number(creditForm.clientId),
-        purchaseDate: creditForm.purchaseDate,
-        paymentMode: creditForm.paymentMode,
-        installmentCount: creditForm.paymentMode === 'INSTALLMENTS'
-          ? Number(creditForm.installmentCount)
-          : null,
-        items
-      })
+      const payload = buildPurchasePayload()
+      await api.createPurchase(user.storeId, payload)
 
       setShowCreditModal(false)
       await loadData()
@@ -192,31 +181,9 @@ export default function StoreCreditsPage() {
     }
   }
 
-  async function generateStatement(event) {
-    event.preventDefault()
-    setError('')
-
-    try {
-      await api.generateStatement(
-        user.storeId,
-        Number(statementForm.clientId),
-        statementForm.cutoffDate
-      )
-      setShowStatementModal(false)
-      await loadData()
-    } catch (statementError) {
-      setError(statementError.message)
-    }
-  }
-
   async function registerPayment() {
     try {
-      if (selected.kind === 'statement') {
-        await api.payStatement(user.storeId, selected.data.id, paymentDate)
-      } else if (selected.installment) {
-        await api.payInstallment(user.storeId, selected.installment.id, paymentDate)
-      }
-
+      await api.payInstallment(user.storeId, selected.installment.id, paymentDate)
       setSelected(null)
       await loadData()
     } catch (paymentError) {
@@ -224,19 +191,16 @@ export default function StoreCreditsPage() {
     }
   }
 
+  const isInstallments = creditForm.paymentMode === 'INSTALLMENTS'
+
   return (
     <section className="content-page">
       <PageBanner
         title="Créditos"
         actions={
-          <div className="heading-actions">
-            <button className="secondary-button" type="button" onClick={openStatementModal}>
-              Generar estado
-            </button>
-            <button className="primary-button" type="button" onClick={openCreditModal}>
-              Nuevo crédito
-            </button>
-          </div>
+          <button className="primary-button" type="button" onClick={openCreditModal}>
+            Nuevo crédito
+          </button>
         }
       />
 
@@ -260,8 +224,7 @@ export default function StoreCreditsPage() {
               <thead>
                 <tr>
                   <th>Cliente</th>
-                  <th>Tipo</th>
-                  <th>Total</th>
+                  <th>Capital</th>
                   <th>Próximo pago</th>
                   <th>Estado</th>
                   <th></th>
@@ -269,26 +232,17 @@ export default function StoreCreditsPage() {
               </thead>
               <tbody>
                 {rows.map(row => {
-                  const next = row.kind === 'plan'
-                    ? row.data.installments?.find(item => item.status === 'PENDING')
-                    : null
-                  const amount = row.kind === 'plan'
-                    ? row.data.capitalizedPrincipal
-                    : row.data.totalAmount
-                  const nextPayment = row.kind === 'plan'
-                    ? (next ? `${date(next.dueDate)} · ${money(next.amount)}` : '—')
-                    : `${date(row.data.dueDate)} · ${money(row.data.totalAmount)}`
+                  const next = row.data.installments?.find(item => item.estado === 'PENDING' || item.estado === 'OVERDUE')
 
                   return (
-                    <tr key={`${row.kind}-${row.data.id}`}>
+                    <tr key={row.data.id}>
                       <td>
                         <strong>{row.client.firstName} {row.client.lastName}</strong>
                         <span className="table-subtext">{row.client.documentNumber}</span>
                       </td>
-                      <td>{row.kind === 'plan' ? 'Cuotas quincenales' : 'Pago único'}</td>
-                      <td>{money(amount)}</td>
-                      <td>{nextPayment}</td>
-                      <td>{row.data.status === 'PAID' ? 'Pagado' : 'Pendiente'}</td>
+                      <td>{money(row.data.principal)}</td>
+                      <td>{next ? `${date(next.dueDate)} · ${money(next.pagoTotal)}` : '—'}</td>
+                      <td>{row.data.status === 'PAID' ? 'Pagado' : 'Activo'}</td>
                       <td>
                         <button className="text-button" type="button" onClick={() => setSelected(row)}>Ver</button>
                       </td>
@@ -299,38 +253,6 @@ export default function StoreCreditsPage() {
             </table>
           </div>
         </section>
-      )}
-
-      {showStatementModal && (
-        <Modal title="Generar estado de cuenta" onClose={() => setShowStatementModal(false)}>
-          <form className="stack-form" onSubmit={generateStatement}>
-            <label>
-              Cliente
-              <select
-                value={statementForm.clientId}
-                onChange={event => changeStatementClient(event.target.value)}
-                required
-              >
-                <option value="">Selecciona un cliente</option>
-                {records.filter(record => record.client.active).map(record => (
-                  <option key={record.client.id} value={record.client.id}>
-                    {record.client.firstName} {record.client.lastName} · corte día {record.client.cutoffDay}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Fecha de corte
-              <input
-                type="date"
-                value={statementForm.cutoffDate}
-                onChange={event => setStatementForm({ ...statementForm, cutoffDate: event.target.value })}
-                required
-              />
-            </label>
-            <button className="primary-button" type="submit">Generar estado</button>
-          </form>
-        </Modal>
       )}
 
       {showCreditModal && (
@@ -369,22 +291,53 @@ export default function StoreCreditsPage() {
                   value={creditForm.paymentMode}
                   onChange={event => setCreditForm({ ...creditForm, paymentMode: event.target.value })}
                 >
-                  <option value="SINGLE_PAYMENT">Pago único</option>
-                  <option value="INSTALLMENTS">Cuotas</option>
+                  <option value="CASH">Al contado</option>
+                  <option value="INSTALLMENTS">Cuotas (método francés)</option>
                 </select>
               </label>
 
-              {creditForm.paymentMode === 'INSTALLMENTS' && (
-                <label>
-                  Número de cuotas
-                  <input
-                    type="number"
-                    min="1"
-                    value={creditForm.installmentCount}
-                    onChange={event => setCreditForm({ ...creditForm, installmentCount: event.target.value })}
-                    required
-                  />
-                </label>
+              {isInstallments && (
+                <>
+                  <label>
+                    % Cuota inicial
+                    <input
+                      type="number"
+                      min="0"
+                      max="50"
+                      step="1"
+                      value={creditForm.porcentajeCuotaInicial}
+                      onChange={event => setCreditForm({ ...creditForm, porcentajeCuotaInicial: event.target.value })}
+                      required
+                    />
+                  </label>
+                  <label>
+                    Número de meses
+                    <select
+                      value={creditForm.numeroMeses}
+                      onChange={event => setCreditForm({ ...creditForm, numeroMeses: event.target.value })}
+                    >
+                      {[1, 2, 3, 4].map(value => <option key={value} value={value}>{value}</option>)}
+                    </select>
+                  </label>
+                  <label>
+                    Periodos de gracia total
+                    <select
+                      value={creditForm.periodosGraciaTotal}
+                      onChange={event => setCreditForm({ ...creditForm, periodosGraciaTotal: event.target.value })}
+                    >
+                      {[0, 1, 2].map(value => <option key={value} value={value}>{value}</option>)}
+                    </select>
+                  </label>
+                  <label>
+                    Periodos de gracia parcial
+                    <select
+                      value={creditForm.periodosGraciaParcial}
+                      onChange={event => setCreditForm({ ...creditForm, periodosGraciaParcial: event.target.value })}
+                    >
+                      {[0, 1, 2].map(value => <option key={value} value={value}>{value}</option>)}
+                    </select>
+                  </label>
+                </>
               )}
             </div>
 
@@ -423,6 +376,30 @@ export default function StoreCreditsPage() {
               </button>
             </div>
 
+            {isInstallments && (
+              <div className="credit-preview">
+                <div className="form-actions">
+                  <button className="secondary-button" type="button" onClick={calculatePreview}>
+                    Calcular cronograma
+                  </button>
+                </div>
+
+                {previewError && <div className="alert-band">{previewError}</div>}
+
+                {preview && (
+                  <>
+                    <div className="credit-detail-line">
+                      <span>Cuota inicial</span>
+                      <strong>{money(preview.cuotaInicial)}</strong>
+                      <span>Capital financiado {money(preview.principal)}</span>
+                      <span>Total a pagar {money(preview.totalAPagar)}</span>
+                    </div>
+                    <FrenchScheduleTable plan={preview} />
+                  </>
+                )}
+              </div>
+            )}
+
             <div className="form-actions">
               <button className="primary-button" type="submit">Registrar crédito</button>
             </div>
@@ -436,65 +413,21 @@ export default function StoreCreditsPage() {
           onClose={() => setSelected(null)}
           wide
         >
-          {selected.kind === 'statement' ? (
-            <div className="credit-detail">
-              <div className="credit-detail-line">
-                <span>Total</span>
-                <strong>{money(selected.data.totalAmount)}</strong>
-                <span>Vence {date(selected.data.dueDate)}</span>
-              </div>
-
-              <div className="table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Compra</th>
-                      <th>Fecha</th>
-                      <th>Capital</th>
-                      <th>Interés</th>
-                      <th>Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selected.data.items.map(item => (
-                      <tr key={item.purchaseId}>
-                        <td>#{item.purchaseId}</td>
-                        <td>{date(item.purchaseDate)}</td>
-                        <td>{money(item.principal)}</td>
-                        <td>{money(item.compensatoryInterest)}</td>
-                        <td>{money(item.totalAmount)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {selected.data.status === 'OPEN' && (
-                <PaymentBox
-                  paymentDate={paymentDate}
-                  setPaymentDate={setPaymentDate}
-                  onPay={registerPayment}
-                  label="Registrar pago"
-                />
-              )}
-            </div>
-          ) : (
-            <div className="credit-detail">
-              <FrenchScheduleTable
-                plan={selected.data}
-                showPaymentAction
-                onPay={installment => setSelected({ ...selected, installment })}
+          <div className="credit-detail">
+            <FrenchScheduleTable
+              plan={selected.data}
+              showPaymentAction
+              onPay={installment => setSelected({ ...selected, installment })}
+            />
+            {selected.installment && (
+              <PaymentBox
+                paymentDate={paymentDate}
+                setPaymentDate={setPaymentDate}
+                onPay={registerPayment}
+                label={`Pagar cuota ${selected.installment.installmentNumber} · ${money(selected.installment.pagoTotal)}`}
               />
-              {selected.installment && (
-                <PaymentBox
-                  paymentDate={paymentDate}
-                  setPaymentDate={setPaymentDate}
-                  onPay={registerPayment}
-                  label={`Pagar cuota ${selected.installment.installmentNumber}`}
-                />
-              )}
-            </div>
-          )}
+            )}
+          </div>
         </Modal>
       )}
     </section>

@@ -11,8 +11,16 @@ const emptyClient = {
   email: '',
   password: '',
   phone: '',
-  cutoffDay: 25,
-  paymentDay: 5
+  teaPactada: 20,
+  teaMoratoriaPactada: 12
+}
+
+function asPercent(value) {
+  return Number((Number(value || 0) * 100).toFixed(4))
+}
+
+function asDecimal(value) {
+  return Number(value || 0) / 100
 }
 
 export default function StoreClientsPage() {
@@ -64,8 +72,8 @@ export default function StoreClientsPage() {
       firstName: client.firstName,
       lastName: client.lastName,
       phone: client.phone || '',
-      cutoffDay: client.cutoffDay,
-      paymentDay: client.paymentDay
+      teaPactada: asPercent(client.teaPactada),
+      teaMoratoriaPactada: asPercent(client.teaMoratoriaPactada)
     })
     setFoundClient(client)
     setModal('edit')
@@ -76,12 +84,18 @@ export default function StoreClientsPage() {
     setSaving(true)
     setError('')
 
+    const payload = {
+      ...form,
+      teaPactada: asDecimal(form.teaPactada),
+      teaMoratoriaPactada: asDecimal(form.teaMoratoriaPactada)
+    }
+
     try {
       if (modal === 'create') {
-        await api.createClient(user.storeId, form)
+        await api.createClient(user.storeId, payload)
         setNotice('Cliente registrado correctamente.')
       } else {
-        await api.updateClient(user.storeId, foundClient.id, form)
+        await api.updateClient(user.storeId, foundClient.id, payload)
         setNotice('Datos del cliente actualizados.')
       }
 
@@ -120,8 +134,8 @@ export default function StoreClientsPage() {
 
     try {
       await api.associateClient(user.storeId, foundClient.id, {
-        cutoffDay: Number(form.cutoffDay),
-        paymentDay: Number(form.paymentDay)
+        teaPactada: asDecimal(form.teaPactada),
+        teaMoratoriaPactada: asDecimal(form.teaMoratoriaPactada)
       })
       setModal(null)
       setNotice('Cliente asociado a la tienda.')
@@ -163,8 +177,8 @@ export default function StoreClientsPage() {
                 <th>Cliente</th>
                 <th>Documento</th>
                 <th>Contacto</th>
-                <th>Corte</th>
-                <th>Pago</th>
+                <th>TEA pactada</th>
+                <th>TEA moratoria</th>
                 <th>Estado</th>
                 <th>Acciones</th>
               </tr>
@@ -178,8 +192,8 @@ export default function StoreClientsPage() {
                   </td>
                   <td>{client.documentNumber}</td>
                   <td>{client.phone || '—'}</td>
-                  <td>Día {client.cutoffDay}</td>
-                  <td>Día {client.paymentDay}</td>
+                  <td>{asPercent(client.teaPactada)}%</td>
+                  <td>{asPercent(client.teaMoratoriaPactada)}%</td>
                   <td>
                     <span className={`status-tag ${client.active ? 'paid' : 'inactive'}`}>
                       {client.active ? 'Activo' : 'Inactivo'}
@@ -264,24 +278,24 @@ export default function StoreClientsPage() {
               />
             </label>
             <label>
-              Día de corte
+              TEA pactada (%)
               <input
                 type="number"
-                min="1"
-                max="30"
-                value={form.cutoffDay}
-                onChange={event => setForm({ ...form, cutoffDay: Number(event.target.value) })}
+                min="0"
+                step="0.0001"
+                value={form.teaPactada}
+                onChange={event => setForm({ ...form, teaPactada: event.target.value })}
                 required
               />
             </label>
             <label>
-              Día de pago
+              TEA moratoria pactada (%)
               <input
                 type="number"
-                min="1"
-                max="30"
-                value={form.paymentDay}
-                onChange={event => setForm({ ...form, paymentDay: Number(event.target.value) })}
+                min="0"
+                step="0.0001"
+                value={form.teaMoratoriaPactada}
+                onChange={event => setForm({ ...form, teaMoratoriaPactada: event.target.value })}
                 required
               />
             </label>
@@ -321,24 +335,24 @@ export default function StoreClientsPage() {
               ) : (
                 <>
                   <label>
-                    Día de corte
+                    TEA pactada (%)
                     <input
                       type="number"
-                      min="1"
-                      max="30"
-                      value={form.cutoffDay}
-                      onChange={event => setForm({ ...form, cutoffDay: Number(event.target.value) })}
+                      min="0"
+                      step="0.0001"
+                      value={form.teaPactada}
+                      onChange={event => setForm({ ...form, teaPactada: event.target.value })}
                       required
                     />
                   </label>
                   <label>
-                    Día de pago
+                    TEA moratoria pactada (%)
                     <input
                       type="number"
-                      min="1"
-                      max="30"
-                      value={form.paymentDay}
-                      onChange={event => setForm({ ...form, paymentDay: Number(event.target.value) })}
+                      min="0"
+                      step="0.0001"
+                      value={form.teaMoratoriaPactada}
+                      onChange={event => setForm({ ...form, teaMoratoriaPactada: event.target.value })}
                       required
                     />
                   </label>

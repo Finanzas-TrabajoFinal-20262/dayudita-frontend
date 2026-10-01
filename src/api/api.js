@@ -43,12 +43,15 @@ export const api = {
 
   getClientAccounts: () => request('/clients/me/accounts'),
   getClientProducts: (storeId) => request(`/clients/me/stores/${storeId}/products`),
-  getClientStatements: () => request('/clients/me/finance/statements'),
   getClientCreditPlans: () => request('/clients/me/finance/credit-plans'),
   getClientPayments: () => request('/clients/me/finance/payments'),
   getStoreClients: (storeId) => request(`/stores/${storeId}/clients`),
   getStoreProducts: (storeId) => request(`/stores/${storeId}/products`),
   createPurchase: (storeId, body) => request(`/stores/${storeId}/purchases`, {
+    method: 'POST',
+    body: JSON.stringify(body)
+  }),
+  simulatePurchase: (storeId, body) => request(`/stores/${storeId}/purchases/simulate`, {
     method: 'POST',
     body: JSON.stringify(body)
   }),
@@ -70,16 +73,7 @@ export const api = {
     body: JSON.stringify({ active })
   }),
 
-  getStoreStatements: (storeId, clientId) => request(`/stores/${storeId}/finance/clients/${clientId}/statements`),
-  generateStatement: (storeId, clientId, cutoffDate) => request(`/stores/${storeId}/finance/clients/${clientId}/statements`, {
-    method: 'POST',
-    body: JSON.stringify({ cutoffDate })
-  }),
   getStoreCreditPlans: (storeId, clientId) => request(`/stores/${storeId}/finance/clients/${clientId}/credit-plans`),
-  payStatement: (storeId, statementId, paymentDate) => request(`/stores/${storeId}/finance/statements/${statementId}/pay`, {
-    method: 'POST',
-    body: JSON.stringify({ paymentDate })
-  }),
   payInstallment: (storeId, installmentId, paymentDate) => request(`/stores/${storeId}/finance/installments/${installmentId}/pay`, {
     method: 'POST',
     body: JSON.stringify({ paymentDate })
@@ -99,8 +93,8 @@ export const api = {
     body: JSON.stringify({ active })
   }),
 
-  getFinancialConfiguration: () => request('/finance/configuration'),
-  updateFinancialConfiguration: (body) => request('/finance/configuration', {
+  getStoreCreditPolicy: (storeId) => request(`/stores/${storeId}/credit-policy`),
+  updateStoreCreditPolicy: (storeId, body) => request(`/stores/${storeId}/credit-policy`, {
     method: 'PUT',
     body: JSON.stringify(body)
   })

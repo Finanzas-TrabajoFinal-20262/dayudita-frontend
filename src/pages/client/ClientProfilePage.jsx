@@ -36,8 +36,8 @@ export default function ClientProfilePage() {
                 <strong>{account.storeName}</strong>
                 <span>{account.active ? 'Cuenta activa' : 'Cuenta inactiva'}</span>
                 <div>
-                  <span>Corte: día {account.cutoffDay}</span>
-                  <span>Pago: día {account.paymentDay}</span>
+                  <span>TEA pactada: {(Number(account.teaPactada || 0) * 100).toFixed(2)}%</span>
+                  <span>TEA moratoria: {(Number(account.teaMoratoriaPactada || 0) * 100).toFixed(2)}%</span>
                 </div>
               </div>
             ))}

@@ -7,9 +7,9 @@ import ClientCreditsPage from './pages/client/ClientCreditsPage'
 import ClientProfilePage from './pages/client/ClientProfilePage'
 import StoreClientsPage from './pages/store/StoreClientsPage'
 import StoreCreditsPage from './pages/store/StoreCreditsPage'
+import StoreCreditPolicyPage from './pages/store/StoreCreditPolicyPage'
 import StoreProfilePage from './pages/store/StoreProfilePage'
 import SystemStoresPage from './pages/system/SystemStoresPage'
-import SystemFinancePage from './pages/system/SystemFinancePage'
 import SystemProfilePage from './pages/system/SystemProfilePage'
 
 function homeForRole(role) {
@@ -60,12 +60,12 @@ export default function App() {
       <Route element={<ProtectedRoute role="STORE_ADMIN"><AppLayout /></ProtectedRoute>}>
         <Route path="/store/clients" element={<StoreClientsPage />} />
         <Route path="/store/credits" element={<StoreCreditsPage />} />
+        <Route path="/store/credit-policy" element={<StoreCreditPolicyPage />} />
         <Route path="/store/profile" element={<StoreProfilePage />} />
       </Route>
 
       <Route element={<ProtectedRoute role="SYSTEM_ADMIN"><AppLayout /></ProtectedRoute>}>
         <Route path="/system/stores" element={<SystemStoresPage />} />
-        <Route path="/system/finance" element={<SystemFinancePage />} />
         <Route path="/system/profile" element={<SystemProfilePage />} />
       </Route>
 

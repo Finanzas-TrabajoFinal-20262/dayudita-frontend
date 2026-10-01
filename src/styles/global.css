@@ -143,6 +143,9 @@ tbody tr:nth-child(even) td { background: #fff4f6; }
 .schedule-table-wrap { background: #fff; }
 .schedule-table { min-width: 1180px; }
 .schedule-table .grace-row td { background: #ffe1e8; }
+.schedule-table .schedule-row-overdue td { background: #ffd1dc; color: var(--wine-dark); }
+.schedule-table .schedule-row-paid td { background: var(--green); color: var(--green-ink); }
+.schedule-table .schedule-totals-row td { background: var(--pale-pink); font-weight: bold; }
 
 .payment-list { display: grid; gap: 8px; }
 .payment-row { display: flex; justify-content: space-between; gap: 20px; padding: 14px 16px; background: #fff; }
@@ -174,6 +177,8 @@ tbody tr:nth-child(even) td { background: #fff4f6; }
 .finance-form { display: grid; gap: 18px; }
 .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .full-span { grid-column: 1 / -1; }
+.form-grid label.checkbox-label { display: flex; flex-direction: row; align-items: center; gap: 8px; }
+.checkbox-label input { width: auto; }
 .form-actions { display: flex; justify-content: flex-end; }
 .stack-form { display: grid; gap: 14px; }
 .associate-result { margin-top: 18px; display: grid; gap: 14px; padding: 16px; background: #fff1f4; }

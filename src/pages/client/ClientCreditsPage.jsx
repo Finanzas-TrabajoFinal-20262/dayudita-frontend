@@ -14,7 +14,6 @@ function date(value) {
 
 export default function ClientCreditsPage() {
   const [plans, setPlans] = useState([])
-  const [statements, setStatements] = useState([])
   const [payments, setPayments] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -22,12 +21,10 @@ export default function ClientCreditsPage() {
   useEffect(() => {
     Promise.all([
       api.getClientCreditPlans(),
-      api.getClientStatements(),
       api.getClientPayments()
     ])
-      .then(([planData, statementData, paymentData]) => {
+      .then(([planData, paymentData]) => {
         setPlans(planData || [])
-        setStatements(statementData || [])
         setPayments(paymentData || [])
       })
       .catch(loadError => setError(loadError.message))
@@ -38,8 +35,9 @@ export default function ClientCreditsPage() {
     () => plans.find(plan => plan.status === 'ACTIVE'),
     [plans]
   )
-  const nextInstallment = activePlan?.installments?.find(item => item.status === 'PENDING')
-  const openStatements = statements.filter(statement => statement.status === 'OPEN')
+  const nextInstallment = activePlan?.installments?.find(
+    item => item.estado === 'PENDING' || item.estado === 'OVERDUE'
+  )
 
   return (
     <section className="content-page">
@@ -52,24 +50,24 @@ export default function ClientCreditsPage() {
         <>
           <div className="credit-summary-line">
             <div>
-              <span>Plan activo</span>
-              <strong>{activePlan ? money(activePlan.capitalizedPrincipal) : '—'}</strong>
+              <span>Crédito activo</span>
+              <strong>{activePlan ? money(activePlan.principal) : '—'}</strong>
             </div>
             <div>
-              <span>Próxima cuota</span>
-              <strong>{nextInstallment ? money(nextInstallment.amount) : '—'}</strong>
+              <span>Próxima cuota a pagar</span>
+              <strong>{nextInstallment ? money(nextInstallment.pagoTotal) : '—'}</strong>
               <small>
                 {nextInstallment ? date(nextInstallment.dueDate) : 'Sin cuota pendiente'}
               </small>
             </div>
             <div>
-              <span>Pagos únicos pendientes</span>
-              <strong>{openStatements.length}</strong>
+              <span>Días de mora en la próxima cuota</span>
+              <strong>{nextInstallment?.diasMora || 0}</strong>
             </div>
           </div>
 
           {plans.length === 0 ? (
-            <p className="empty-state">Todavía no tienes planes en cuotas.</p>
+            <p className="empty-state">Todavía no tienes créditos en cuotas.</p>
           ) : (
             plans.map(plan => (
               <section className="plain-section" key={plan.id}>
@@ -84,38 +82,6 @@ export default function ClientCreditsPage() {
             ))
           )}
 
-          <section className="plain-section">
-            <h2>Estados de cuenta</h2>
-            {statements.length === 0 ? (
-              <p className="muted">No hay estados de cuenta.</p>
-            ) : (
-              <div className="table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Corte</th>
-                      <th>Vencimiento</th>
-                      <th>Capital</th>
-                      <th>Total</th>
-                      <th>Estado</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {statements.map(statement => (
-                      <tr key={statement.id}>
-                        <td>{date(statement.cutoffDate)}</td>
-                        <td>{date(statement.dueDate)}</td>
-                        <td>{money(statement.principal)}</td>
-                        <td>{money(statement.totalAmount)}</td>
-                        <td>{statement.status === 'PAID' ? 'Pagado' : 'Pendiente'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </section>
-
           {payments.length > 0 && (
             <section className="plain-section">
               <h2>Pagos realizados</h2>
@@ -126,7 +92,7 @@ export default function ClientCreditsPage() {
                       <strong>{money(payment.totalAmount)}</strong>
                       <span>{date(payment.paymentDate)}</span>
                     </div>
-                    <span>{payment.type === 'INSTALLMENT' ? 'Cuota' : 'Estado de cuenta'}</span>
+                    <span>{payment.diasMora > 0 ? `${payment.diasMora} días de mora` : 'Sin mora'}</span>
                   </div>
                 ))}
               </div>
