@@ -12,7 +12,11 @@ const emptyClient = {
   password: '',
   phone: '',
   teaPactada: 20,
-  teaMoratoriaPactada: 12
+  teaMoratoriaPactada: 12,
+  currency: 'PEN',
+  limiteCredito: 500,
+  plazoMaximoMeses: 4,
+  diaCorte: 15
 }
 
 function asPercent(value) {
@@ -73,7 +77,11 @@ export default function StoreClientsPage() {
       lastName: client.lastName,
       phone: client.phone || '',
       teaPactada: asPercent(client.teaPactada),
-      teaMoratoriaPactada: asPercent(client.teaMoratoriaPactada)
+      teaMoratoriaPactada: asPercent(client.teaMoratoriaPactada),
+      currency: client.currency,
+      limiteCredito: client.limiteCredito,
+      plazoMaximoMeses: client.plazoMaximoMeses,
+      diaCorte: client.diaCorte
     })
     setFoundClient(client)
     setModal('edit')
@@ -87,7 +95,10 @@ export default function StoreClientsPage() {
     const payload = {
       ...form,
       teaPactada: asDecimal(form.teaPactada),
-      teaMoratoriaPactada: asDecimal(form.teaMoratoriaPactada)
+      teaMoratoriaPactada: asDecimal(form.teaMoratoriaPactada),
+      limiteCredito: Number(form.limiteCredito),
+      plazoMaximoMeses: Number(form.plazoMaximoMeses),
+      diaCorte: Number(form.diaCorte)
     }
 
     try {
@@ -135,7 +146,11 @@ export default function StoreClientsPage() {
     try {
       await api.associateClient(user.storeId, foundClient.id, {
         teaPactada: asDecimal(form.teaPactada),
-        teaMoratoriaPactada: asDecimal(form.teaMoratoriaPactada)
+        teaMoratoriaPactada: asDecimal(form.teaMoratoriaPactada),
+        currency: form.currency,
+        limiteCredito: Number(form.limiteCredito),
+        plazoMaximoMeses: Number(form.plazoMaximoMeses),
+        diaCorte: Number(form.diaCorte)
       })
       setModal(null)
       setNotice('Cliente asociado a la tienda.')
@@ -179,6 +194,10 @@ export default function StoreClientsPage() {
                 <th>Contacto</th>
                 <th>TEA pactada</th>
                 <th>TEA moratoria</th>
+                <th>Moneda</th>
+                <th>Límite</th>
+                <th>Plazo máx.</th>
+                <th>Día corte</th>
                 <th>Estado</th>
                 <th>Acciones</th>
               </tr>
@@ -194,6 +213,10 @@ export default function StoreClientsPage() {
                   <td>{client.phone || '—'}</td>
                   <td>{asPercent(client.teaPactada)}%</td>
                   <td>{asPercent(client.teaMoratoriaPactada)}%</td>
+                  <td>{client.currency}</td>
+                  <td>{client.limiteCredito}</td>
+                  <td>{client.plazoMaximoMeses}</td>
+                  <td>{client.diaCorte}</td>
                   <td>
                     <span className={`status-tag ${client.active ? 'paid' : 'inactive'}`}>
                       {client.active ? 'Activo' : 'Inactivo'}
@@ -299,6 +322,51 @@ export default function StoreClientsPage() {
                 required
               />
             </label>
+            <label>
+              Moneda del crédito
+              <select
+                value={form.currency}
+                onChange={event => setForm({ ...form, currency: event.target.value })}
+                required
+              >
+                <option value="PEN">Soles (PEN)</option>
+                <option value="USD">Dólares (USD)</option>
+              </select>
+            </label>
+            <label>
+              Límite de crédito
+              <input
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={form.limiteCredito}
+                onChange={event => setForm({ ...form, limiteCredito: event.target.value })}
+                required
+              />
+            </label>
+            <label>
+              Plazo máximo (meses)
+              <input
+                type="number"
+                min="1"
+                step="1"
+                value={form.plazoMaximoMeses}
+                onChange={event => setForm({ ...form, plazoMaximoMeses: event.target.value })}
+                required
+              />
+            </label>
+            <label>
+              Día de corte (1-31)
+              <input
+                type="number"
+                min="1"
+                max="31"
+                step="1"
+                value={form.diaCorte}
+                onChange={event => setForm({ ...form, diaCorte: event.target.value })}
+                required
+              />
+            </label>
 
             <div className="form-actions full-span">
               <button className="primary-button" type="submit" disabled={saving}>
@@ -353,6 +421,51 @@ export default function StoreClientsPage() {
                       step="0.0001"
                       value={form.teaMoratoriaPactada}
                       onChange={event => setForm({ ...form, teaMoratoriaPactada: event.target.value })}
+                      required
+                    />
+                  </label>
+                  <label>
+                    Moneda del crédito
+                    <select
+                      value={form.currency}
+                      onChange={event => setForm({ ...form, currency: event.target.value })}
+                      required
+                    >
+                      <option value="PEN">Soles (PEN)</option>
+                      <option value="USD">Dólares (USD)</option>
+                    </select>
+                  </label>
+                  <label>
+                    Límite de crédito
+                    <input
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      value={form.limiteCredito}
+                      onChange={event => setForm({ ...form, limiteCredito: event.target.value })}
+                      required
+                    />
+                  </label>
+                  <label>
+                    Plazo máximo (meses)
+                    <input
+                      type="number"
+                      min="1"
+                      step="1"
+                      value={form.plazoMaximoMeses}
+                      onChange={event => setForm({ ...form, plazoMaximoMeses: event.target.value })}
+                      required
+                    />
+                  </label>
+                  <label>
+                    Día de corte (1-31)
+                    <input
+                      type="number"
+                      min="1"
+                      max="31"
+                      step="1"
+                      value={form.diaCorte}
+                      onChange={event => setForm({ ...form, diaCorte: event.target.value })}
                       required
                     />
                   </label>
