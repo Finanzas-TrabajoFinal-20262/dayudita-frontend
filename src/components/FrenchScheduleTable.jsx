@@ -45,7 +45,7 @@ export default function FrenchScheduleTable({ plan, showPaymentAction, onPay }) 
         </p>
         <p>
           {plan.diasGraciaTotal > 0
-            ? `Gracia total: ${plan.diasGraciaTotal} día${plan.diasGraciaTotal === 1 ? '' : 's'} hasta la primera fecha de corte (15 o 30)`
+            ? `Gracia total: ${plan.diasGraciaTotal} día${plan.diasGraciaTotal === 1 ? '' : 's'} hasta la primera fecha de corte pactada con el cliente`
             : 'Sin gracia total en este crédito'}
         </p>
       </div>
@@ -56,7 +56,8 @@ export default function FrenchScheduleTable({ plan, showPaymentAction, onPay }) 
             <tr>
               <th>N°</th>
               <th>Vencimiento</th>
-              <th>TEQ</th>
+              <th>Días</th>
+              <th>Tasa periodo</th>
               <th>Tipo</th>
               <th>Saldo inicial</th>
               <th>Interés</th>
@@ -75,7 +76,8 @@ export default function FrenchScheduleTable({ plan, showPaymentAction, onPay }) 
               <tr key={item.id ?? index} className={statusRowClass(item.estado)}>
                 <td>{item.installmentNumber}</td>
                 <td>{date(item.dueDate)}</td>
-                <td>{percent(plan.teq)}</td>
+                <td>{item.diasPeriodo}</td>
+                <td>{percent(item.tasaPeriodo)}</td>
                 <td>{TYPE_LABEL[item.type] || item.type}</td>
                 <td>{money(item.openingBalance)}</td>
                 <td>{money(item.interest)}</td>
@@ -98,7 +100,7 @@ export default function FrenchScheduleTable({ plan, showPaymentAction, onPay }) 
           </tbody>
           <tfoot>
             <tr className="schedule-totals-row">
-              <td colSpan={5}>Totales</td>
+              <td colSpan={6}>Totales</td>
               <td>{money(plan.totalIntereses)}</td>
               <td>({money(plan.totalCuotas)})</td>
               <td>({money(plan.totalAmortizacion)})</td>
