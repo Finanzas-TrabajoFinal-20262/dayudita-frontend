@@ -4,6 +4,9 @@ import { useAuth } from '../../context/AuthContext'
 import Modal from '../../components/Modal'
 import PageBanner from '../../components/PageBanner'
 
+// Fijada por el sistema (dayudita.tea-moratoria en el backend); no es editable.
+const TEA_MORATORIA_FIJA = 12
+
 const emptyClient = {
   firstName: '',
   lastName: '',
@@ -12,7 +15,6 @@ const emptyClient = {
   password: '',
   phone: '',
   teaPactada: 20,
-  teaMoratoriaPactada: 12,
   currency: 'PEN',
   limiteCredito: 500,
   plazoMaximoMeses: 4,
@@ -77,7 +79,6 @@ export default function StoreClientsPage() {
       lastName: client.lastName,
       phone: client.phone || '',
       teaPactada: asPercent(client.teaPactada),
-      teaMoratoriaPactada: asPercent(client.teaMoratoriaPactada),
       currency: client.currency,
       limiteCredito: client.limiteCredito,
       plazoMaximoMeses: client.plazoMaximoMeses,
@@ -95,7 +96,6 @@ export default function StoreClientsPage() {
     const payload = {
       ...form,
       teaPactada: asDecimal(form.teaPactada),
-      teaMoratoriaPactada: asDecimal(form.teaMoratoriaPactada),
       limiteCredito: Number(form.limiteCredito),
       plazoMaximoMeses: Number(form.plazoMaximoMeses),
       diaCorte: Number(form.diaCorte)
@@ -146,7 +146,6 @@ export default function StoreClientsPage() {
     try {
       await api.associateClient(user.storeId, foundClient.id, {
         teaPactada: asDecimal(form.teaPactada),
-        teaMoratoriaPactada: asDecimal(form.teaMoratoriaPactada),
         currency: form.currency,
         limiteCredito: Number(form.limiteCredito),
         plazoMaximoMeses: Number(form.plazoMaximoMeses),
@@ -317,9 +316,8 @@ export default function StoreClientsPage() {
                 type="number"
                 min="0"
                 step="0.0001"
-                value={form.teaMoratoriaPactada}
-                onChange={event => setForm({ ...form, teaMoratoriaPactada: event.target.value })}
-                required
+                value={TEA_MORATORIA_FIJA}
+                readOnly
               />
             </label>
             <label>
@@ -419,9 +417,8 @@ export default function StoreClientsPage() {
                       type="number"
                       min="0"
                       step="0.0001"
-                      value={form.teaMoratoriaPactada}
-                      onChange={event => setForm({ ...form, teaMoratoriaPactada: event.target.value })}
-                      required
+                      value={TEA_MORATORIA_FIJA}
+                      readOnly
                     />
                   </label>
                   <label>
