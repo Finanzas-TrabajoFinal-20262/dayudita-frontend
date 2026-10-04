@@ -34,7 +34,7 @@ h2 { margin-bottom: 14px; color: var(--wine); font-size: 28px; line-height: 1.05
 
 .login-page { min-height: 100vh; min-height: 100svh; display: grid; grid-template-columns: minmax(370px, 44%) minmax(0, 1fr); background: var(--soft-pink); }
 .login-brand-panel { position: relative; min-height: 100vh; min-height: 100svh; overflow: hidden; background: var(--wine); }
-.login-logo { position: absolute; z-index: 3; top: 5%; left: 6%; width: min(82%, 560px); height: auto; padding: 9px 14px; object-fit: contain; background: var(--pale-pink); }
+.login-logo { position: absolute; z-index: 3; top: 8%; left: 50%; width: min(78%, 560px); height: auto; object-fit: contain; transform: translateX(-50%); }
 .login-bunny { position: absolute; z-index: 2; left: 5%; bottom: -8px; width: min(48%, 330px); height: auto; }
 .login-phrase { position: absolute; z-index: 3; right: 7%; bottom: 12%; width: 43%; margin: 0; color: #ffc9d8; font-size: clamp(30px, 3.3vw, 50px); line-height: .92; transform: rotate(-5deg); }
 .login-deco { position: absolute; z-index: 1; pointer-events: none; }
@@ -62,7 +62,7 @@ input:focus, select:focus { outline: 3px solid var(--wine); outline-offset: 0; }
 
 .app-shell { min-height: 100vh; display: grid; grid-template-columns: 190px minmax(0, 1fr); }
 .sidebar { position: fixed; inset: 0 auto 0 0; width: 190px; z-index: 20; overflow: hidden; background: var(--wine); color: #fff; }
-.sidebar-brand { height: 102px; display: grid; place-items: center; padding: 12px 10px 6px; background: var(--pale-pink); }
+.sidebar-brand { height: 102px; display: grid; place-items: center; padding: 12px 10px 6px; background: transparent; }
 .sidebar-brand img { width: 100%; max-width: 168px; max-height: 84px; object-fit: contain; }
 .sidebar-menu { display: grid; gap: 6px; padding: 4px 12px; }
 .sidebar-link { min-height: 58px; display: grid; place-items: center; padding: 0 12px; color: #fff; text-decoration: none; font-size: 17px; }
@@ -84,7 +84,6 @@ input:focus, select:focus { outline: 3px solid var(--wine); outline-offset: 0; }
 .page-banner-actions .primary-button { background: var(--wine-dark); }
 .page-banner-actions .secondary-button { background: var(--pale-pink); color: var(--wine); }
 .page-banner-bunny { position: absolute; z-index: 1; right: 13px; bottom: -20px; width: 132px; max-height: 126px; object-fit: contain; object-position: bottom; }
-.page-banner-star { position: absolute; right: 145px; top: 10px; width: 34px; transform: rotate(12deg); }
 .page-banner-stars { position: absolute; right: 122px; bottom: 4px; width: 48px; transform: rotate(-9deg); }
 
 .page-toolbar { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 10px; margin: 0 0 18px; }
@@ -219,7 +218,7 @@ tbody tr:nth-child(even) td { background: #fff4f6; }
 
   .login-page { grid-template-columns: 1fr; min-height: 100vh; min-height: 100svh; }
   .login-brand-panel { min-height: 320px; }
-  .login-logo { top: 7%; left: 5%; width: min(53%, 420px); }
+  .login-logo { top: 9%; left: 50%; width: min(56%, 420px); transform: translateX(-50%); }
   .login-bunny { left: auto; right: 7%; bottom: -8px; width: min(25%, 190px); }
   .login-phrase { left: 6%; right: auto; bottom: 13%; width: 43%; font-size: 38px; }
   .login-deco-one { right: 34%; top: 41%; width: 52px; }
@@ -242,8 +241,7 @@ tbody tr:nth-child(even) td { background: #fff4f6; }
   .page-banner-copy { min-height: 104px; padding: 15px 106px 15px 18px; flex-direction: column; align-items: flex-start; justify-content: center; }
   .page-banner h1 { font-size: clamp(34px, 10vw, 48px); }
   .page-banner-bunny { right: 0; bottom: -14px; width: 102px; max-height: 105px; }
-  .page-banner-star { right: 88px; top: 8px; width: 26px; }
-  .page-banner-stars { display: none; }
+  .page-banner-stars { right: 82px; top: 8px; bottom: auto; width: 38px; }
   .page-banner-actions { width: 100%; }
   .page-banner-actions .primary-button, .page-banner-actions .secondary-button { flex: 1; padding: 0 12px; }
   .page-toolbar, .products-toolbar { align-items: stretch; flex-direction: column; }
@@ -263,7 +261,7 @@ tbody tr:nth-child(even) td { background: #fff4f6; }
   .credit-item-row { grid-template-columns: 1fr; }
 
   .login-brand-panel { min-height: 260px; }
-  .login-logo { top: 7%; left: 5%; width: 70%; max-width: 315px; }
+  .login-logo { top: 9%; left: 50%; width: 70%; max-width: 315px; transform: translateX(-50%); }
   .login-bunny { right: 2%; bottom: -9px; width: 128px; }
   .login-phrase { left: 5%; bottom: 11%; width: 52%; font-size: 29px; }
   .login-deco-one { right: 34%; top: 46%; width: 36px; }

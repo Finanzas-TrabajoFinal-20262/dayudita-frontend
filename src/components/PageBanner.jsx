@@ -6,7 +6,6 @@ import bunnyQuestion from '../assets/bunny-question.png'
 import bunnyDefault from '../assets/bunny-default.png'
 import bunnyWink from '../assets/bunny-wink.png'
 import bunnyLie from '../assets/bunny-lie.png'
-import starPink from '../assets/star-pink.png'
 import starsPink from '../assets/stars-pink-trio.png'
 
 const bunnyByTitle = {
@@ -27,7 +26,6 @@ export default function PageBanner({ title, actions }) {
         {actions && <div className="page-banner-actions">{actions}</div>}
       </div>
       <img className="page-banner-stars" src={starsPink} alt="" aria-hidden="true" />
-      <img className="page-banner-star" src={starPink} alt="" aria-hidden="true" />
       <img className="page-banner-bunny" src={bunnyByTitle[title] || bunnyDefault} alt="" aria-hidden="true" />
     </div>
   )
