@@ -45,7 +45,7 @@ export default function FrenchScheduleTable({ plan, showPaymentAction, onPay }) 
         </p>
         <p>
           {plan.diasGraciaTotal > 0
-            ? `Gracia total: ${plan.diasGraciaTotal} día${plan.diasGraciaTotal === 1 ? '' : 's'} hasta la primera fecha de corte pactada con el cliente`
+            ? `Gracia total: ${plan.diasGraciaTotal} día${plan.diasGraciaTotal === 1 ? '' : 's'} hasta el primer corte (se aplica la TEQ y el interés se capitaliza)`
             : 'Sin gracia total en este crédito'}
         </p>
       </div>

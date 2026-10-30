@@ -141,7 +141,7 @@ export default function StoreCreditPolicyPage() {
               checked={Boolean(form.otorgaGracia)}
               onChange={event => updateField('otorgaGracia', event.target.checked)}
             />
-            Otorga gracia total por fecha de corte (15 y 30 de cada mes)
+            Otorga gracia total hasta el primer corte del cliente (interés a la TEQ, se capitaliza)
           </label>
         </div>
         <button className="primary-button" type="submit">Guardar</button>
