@@ -40,12 +40,12 @@ export default function FrenchScheduleTable({ plan, showPaymentAction, onPay }) 
       <div className="schedule-heading">
         <h2>Tabla de método francés</h2>
         <p>
-          Quincenal · {plan.paymentPeriodDays || 15} días · {plan.installmentCount} cuotas
+          Quincenal · {plan.paymentPeriodDays || 15} días · {plan.installmentCount} periodos
           {' '}· TEA {percent(plan.teaPactada)} · TEQ {percent(plan.teq)}
         </p>
         <p>
           {plan.diasGraciaTotal > 0
-            ? `Gracia total: ${plan.diasGraciaTotal} día${plan.diasGraciaTotal === 1 ? '' : 's'} hasta el primer corte (se aplica la TEQ y el interés se capitaliza)`
+            ? 'Gracia total en el periodo 1 (15 días desde la compra): el interés se calcula con la TEQ y se capitaliza.'
             : 'Sin gracia total en este crédito'}
         </p>
       </div>

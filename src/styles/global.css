@@ -130,6 +130,7 @@ th { padding: 13px 12px; background: var(--rose); color: #fff; text-align: left;
 td { padding: 13px 12px; background: #fff; color: var(--ink); vertical-align: top; }
 tbody tr:nth-child(even) td { background: #fff4f6; }
 .table-subtext { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; }
+.field-hint { color: var(--muted); font-size: 12px; }
 .row-actions { display: flex; flex-wrap: wrap; gap: 12px; }
 .status-tag { display: inline-block; padding: 5px 10px; background: #f7c6d2; color: var(--wine); }
 .status-tag.paid { background: var(--green); color: var(--green-ink); }
