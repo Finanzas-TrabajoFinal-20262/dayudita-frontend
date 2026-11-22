@@ -12,6 +12,7 @@ const menuByRole = {
   ],
   STORE_ADMIN: [
     { to: '/store/clients', label: 'CLIENTES' },
+    { to: '/store/products', label: 'PRODUCTOS' },
     { to: '/store/credits', label: 'CRÉDITOS' },
     { to: '/store/credit-policy', label: 'POLÍTICA DE CRÉDITO' },
     { to: '/store/profile', label: 'PERFIL' }

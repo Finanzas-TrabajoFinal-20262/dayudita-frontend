@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { ToastMessage } from '../../context/ToastContext'
 import { api } from '../../api/api'
 import Modal from '../../components/Modal'
 import PageBanner from '../../components/PageBanner'
@@ -77,7 +78,7 @@ export default function SystemStoresPage() {
         actions={<button className="primary-button" type="button" onClick={openCreate}>Nueva tienda</button>}
       />
 
-      {error && <div className="alert-band">{error}</div>}
+      <ToastMessage message={error} onClose={() => setError('')} />
 
       <section className="paper-section no-pad">
         <div className="table-wrap">

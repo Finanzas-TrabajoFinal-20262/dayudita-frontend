@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { ToastMessage } from '../context/ToastContext'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import logo from '../assets/dayudita-logo.png'
@@ -86,7 +87,7 @@ export default function LoginPage() {
             />
           </label>
 
-          {error && <p className="form-error">{error}</p>}
+          <ToastMessage message={error} onClose={() => setError('')} />
 
           <button className="primary-button login-button" disabled={submitting}>
             {submitting ? 'INGRESANDO...' : 'INGRESAR'}

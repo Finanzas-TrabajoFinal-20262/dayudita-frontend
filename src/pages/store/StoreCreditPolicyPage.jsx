@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { ToastMessage } from '../../context/ToastContext'
 import { api } from '../../api/api'
 import { useAuth } from '../../context/AuthContext'
 import PageBanner from '../../components/PageBanner'
@@ -61,7 +62,7 @@ export default function StoreCreditPolicyPage() {
     return (
       <section className="content-page">
         <PageBanner title="Política de crédito" />
-        <div className="alert-band">{error}</div>
+        <ToastMessage message={error} />
       </section>
     )
   }
@@ -74,8 +75,8 @@ export default function StoreCreditPolicyPage() {
     <section className="content-page">
       <PageBanner title="Política de crédito" />
 
-      {error && <div className="alert-band">{error}</div>}
-      {notice && <div className="success-band">{notice}</div>}
+      <ToastMessage message={error} onClose={() => setError('')} />
+      <ToastMessage message={notice} tone="success" onClose={() => setNotice('')} />
 
       <div className="finance-fixed-line">
         <span>Moneda <strong>{form.currency}</strong></span>
@@ -141,7 +142,7 @@ export default function StoreCreditPolicyPage() {
               checked={Boolean(form.otorgaGracia)}
               onChange={event => updateField('otorgaGracia', event.target.checked)}
             />
-            Otorga gracia total en el primer periodo (15 días desde la compra, interés a la TEQ y capitalizado)
+            Permite otorgar gracia total: de 0 a 3 periodos de 15 días al inicio del cronograma, elegidos en cada crédito (interés a la TEQ y capitalizado)
           </label>
         </div>
         <button className="primary-button" type="submit">Guardar</button>

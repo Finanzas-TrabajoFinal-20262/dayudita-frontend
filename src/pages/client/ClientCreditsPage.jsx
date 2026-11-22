@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { ToastMessage } from '../../context/ToastContext'
 import { api } from '../../api/api'
 import FrenchScheduleTable from '../../components/FrenchScheduleTable'
 import PageBanner from '../../components/PageBanner'
@@ -43,7 +44,7 @@ export default function ClientCreditsPage() {
     <section className="content-page">
       <PageBanner title="Mis créditos" />
 
-      {error && <div className="alert-band">{error}</div>}
+      <ToastMessage message={error} onClose={() => setError('')} />
       {loading && <div className="screen-message compact">Cargando créditos...</div>}
 
       {!loading && (
@@ -90,7 +91,10 @@ export default function ClientCreditsPage() {
                   <div className="payment-row" key={payment.id}>
                     <div>
                       <strong>{money(payment.totalAmount)}</strong>
-                      <span>{date(payment.paymentDate)}</span>
+                      <span>
+                        {date(payment.paymentDate)}
+                        {payment.historical ? ' (cronograma anterior)' : ''}
+                      </span>
                     </div>
                     <span>{payment.diasMora > 0 ? `${payment.diasMora} días de mora` : 'Sin mora'}</span>
                   </div>

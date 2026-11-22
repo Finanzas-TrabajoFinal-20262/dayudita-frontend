@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { ToastMessage } from '../../context/ToastContext'
 import { api } from '../../api/api'
 import { useAuth } from '../../context/AuthContext'
 import PageBanner from '../../components/PageBanner'
@@ -16,7 +17,7 @@ export default function ClientProfilePage() {
     <section className="content-page">
       <PageBanner title="Mi perfil" />
 
-      {error && <div className="alert-band">{error}</div>}
+      <ToastMessage message={error} onClose={() => setError('')} />
 
       <div className="profile-card-grid">
         <section className="profile-card profile-card-main">
@@ -35,10 +36,6 @@ export default function ClientProfilePage() {
               <div className="profile-store" key={account.clientAccountId}>
                 <strong>{account.storeName}</strong>
                 <span>{account.active ? 'Cuenta activa' : 'Cuenta inactiva'}</span>
-                <div>
-                  <span>TEA pactada: {(Number(account.teaPactada || 0) * 100).toFixed(2)}%</span>
-                  <span>TEA moratoria: {(Number(account.teaMoratoriaPactada || 0) * 100).toFixed(2)}%</span>
-                </div>
               </div>
             ))}
           </div>

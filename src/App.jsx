@@ -7,6 +7,7 @@ import ClientCreditsPage from './pages/client/ClientCreditsPage'
 import ClientProfilePage from './pages/client/ClientProfilePage'
 import StoreClientsPage from './pages/store/StoreClientsPage'
 import StoreCreditsPage from './pages/store/StoreCreditsPage'
+import StoreProductsPage from './pages/store/StoreProductsPage'
 import StoreCreditPolicyPage from './pages/store/StoreCreditPolicyPage'
 import StoreProfilePage from './pages/store/StoreProfilePage'
 import SystemStoresPage from './pages/system/SystemStoresPage'
@@ -59,6 +60,7 @@ export default function App() {
 
       <Route element={<ProtectedRoute role="STORE_ADMIN"><AppLayout /></ProtectedRoute>}>
         <Route path="/store/clients" element={<StoreClientsPage />} />
+        <Route path="/store/products" element={<StoreProductsPage />} />
         <Route path="/store/credits" element={<StoreCreditsPage />} />
         <Route path="/store/credits/:planId" element={<StoreCreditsPage />} />
         <Route path="/store/credit-policy" element={<StoreCreditPolicyPage />} />

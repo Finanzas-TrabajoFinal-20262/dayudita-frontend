@@ -1,39 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
+import { ToastMessage } from '../../context/ToastContext'
 import { api } from '../../api/api'
 import Modal from '../../components/Modal'
 import PageBanner from '../../components/PageBanner'
-import pinataImage from '../../assets/product-pinata.jpg'
-import balloonsPackImage from '../../assets/product-balloons-pack.jpg'
-import balloonsThemeImage from '../../assets/product-balloons-theme.jpg'
-import plushiesImage from '../../assets/product-plushies.jpg'
-import tentImage from '../../assets/product-tent.jpg'
-import prizesImage from '../../assets/product-prizes.jpg'
-import utensilsImage from '../../assets/product-utensils.jpg'
-import dessertStandImage from '../../assets/product-dessert-stand.jpg'
-
-const imageRules = [
-  { terms: ['200 globos'], image: balloonsPackImage },
-  { terms: ['12 globos', 'temáticos', 'tematicos'], image: balloonsThemeImage },
-  { terms: ['peluches'], image: plushiesImage },
-  { terms: ['carpa'], image: tentImage },
-  { terms: ['premios'], image: prizesImage },
-  { terms: ['utensilios', 'vasos', 'platos'], image: utensilsImage },
-  { terms: ['postres', 'estante'], image: dessertStandImage },
-  { terms: ['unicornio', 'piñata'], image: pinataImage }
-]
+import { localImage, productCode } from '../../utils/productImages'
 
 function money(value) {
   return `S/ ${Number(value || 0).toFixed(2)}`
-}
-
-function productCode(product) {
-  return product.code || `DAYU-${String(product.id || 0).padStart(4, '0')}`
-}
-
-function localImage(product) {
-  const text = `${product.name || ''} ${product.description || ''}`.toLowerCase()
-  const match = imageRules.find(rule => rule.terms.some(term => text.includes(term)))
-  return match?.image || pinataImage
 }
 
 function normalize(value) {
@@ -114,7 +87,7 @@ export default function ClientProductsPage() {
         {accounts.length === 1 && <span className="store-stamp">{accounts[0].storeName}</span>}
       </div>
 
-      {error && <div className="alert-band">{error}</div>}
+      <ToastMessage message={error} onClose={() => setError('')} />
       {loading && <div className="screen-message compact">Cargando productos...</div>}
 
       {!loading && !error && visibleProducts.length === 0 && (

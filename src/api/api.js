@@ -1,14 +1,23 @@
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
 
+export const SESSION_EXPIRED_EVENT = 'dayudita:session-expired'
+
 async function request(path, options = {}) {
-  const response = await fetch(`${API_BASE}${path}`, {
-    credentials: 'include',
-    ...options,
-    headers: {
-      ...(options.body ? { 'Content-Type': 'application/json' } : {}),
-      ...(options.headers || {})
-    }
-  })
+  let response
+  try {
+    response = await fetch(`${API_BASE}${path}`, {
+      credentials: 'include',
+      ...options,
+      headers: {
+        ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+        ...(options.headers || {})
+      }
+    })
+  } catch {
+    const networkError = new Error('No pudimos conectarnos con Dayudita. Verifica que la aplicación esté funcionando e inténtalo nuevamente.')
+    networkError.network = true
+    throw networkError
+  }
 
   const text = await response.text()
   let data = null
@@ -19,6 +28,13 @@ async function request(path, options = {}) {
     } catch {
       data = text
     }
+  }
+
+  if (response.status === 401 && path !== '/auth/login' && path !== '/auth/me') {
+    window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT))
+    const sessionError = new Error('Tu sesión terminó. Vuelve a iniciar sesión.')
+    sessionError.sessionExpired = true
+    throw sessionError
   }
 
   if (!response.ok) {
@@ -47,6 +63,18 @@ export const api = {
   getClientPayments: () => request('/clients/me/finance/payments'),
   getStoreClients: (storeId) => request(`/stores/${storeId}/clients`),
   getStoreProducts: (storeId) => request(`/stores/${storeId}/products`),
+  createProduct: (storeId, body) => request(`/stores/${storeId}/products`, {
+    method: 'POST',
+    body: JSON.stringify(body)
+  }),
+  updateProduct: (storeId, productId, body) => request(`/stores/${storeId}/products/${productId}`, {
+    method: 'PUT',
+    body: JSON.stringify(body)
+  }),
+  updateProductStatus: (storeId, productId, active) => request(`/stores/${storeId}/products/${productId}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ active })
+  }),
   createPurchase: (storeId, body) => request(`/stores/${storeId}/purchases`, {
     method: 'POST',
     body: JSON.stringify(body)
@@ -77,6 +105,18 @@ export const api = {
   payInstallment: (storeId, installmentId, paymentDate) => request(`/stores/${storeId}/finance/installments/${installmentId}/pay`, {
     method: 'POST',
     body: JSON.stringify({ paymentDate })
+  }),
+  getStoreCreditPlan: (storeId, planId) => request(`/stores/${storeId}/finance/credit-plans/${planId}`),
+  simulateCreditPlanUpdate: (storeId, planId, body) => request(`/stores/${storeId}/finance/credit-plans/${planId}/simulate`, {
+    method: 'POST',
+    body: JSON.stringify(body)
+  }),
+  updateCreditPlan: (storeId, planId, body) => request(`/stores/${storeId}/finance/credit-plans/${planId}`, {
+    method: 'PUT',
+    body: JSON.stringify(body)
+  }),
+  deleteCreditPlan: (storeId, planId) => request(`/stores/${storeId}/finance/credit-plans/${planId}`, {
+    method: 'DELETE'
   }),
 
   getStores: () => request('/stores'),
