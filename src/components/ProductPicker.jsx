@@ -18,7 +18,7 @@ function Thumb({ product, className = 'picker-thumb' }) {
   )
 }
 
-function ProductSelect({ products, value, onChange, addedIds, labelledBy }) {
+function ProductSelect({ products, value, onChange, addedIds, labelledBy, priceFor }) {
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
   const rootRef = useRef(null)
@@ -93,6 +93,7 @@ function ProductSelect({ products, value, onChange, addedIds, labelledBy }) {
         <span className="product-select-label" id={`${listId}-value`}>
           {selected ? selected.name : 'Selecciona un producto'}
         </span>
+        {selected && <span className="product-select-price">{money(priceFor(selected))}</span>}
         <span className="product-select-caret" aria-hidden="true">▾</span>
       </button>
       {open && (
@@ -115,6 +116,7 @@ function ProductSelect({ products, value, onChange, addedIds, labelledBy }) {
                   <strong>{product.name}</strong>
                   <span>{productCode(product)}{added ? ' (ya agregado)' : ''}</span>
                 </span>
+                <span className="product-select-price">{money(priceFor(product))}</span>
               </li>
             )
           })}
@@ -204,6 +206,7 @@ export default function ProductPicker({ products, items, onChange, priceFor, emp
               onChange={selectCandidate}
               addedIds={addedIds}
               labelledBy={selectLabelId}
+              priceFor={priceFor}
             />
           </div>
           {candidate && (

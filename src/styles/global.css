@@ -335,6 +335,7 @@ tbody tr:nth-child(even) td { background: #fff4f6; }
 .product-select-button { width: 100%; min-height: 50px; display: flex; align-items: center; gap: 10px; padding: 0 14px 0 6px; border: 0; background: #fff; color: var(--ink); text-align: left; }
 .product-select-button:focus-visible { outline: 3px solid var(--wine); outline-offset: 0; }
 .product-select-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.product-select-price { margin-left: auto; padding-left: 12px; font-weight: 600; color: var(--wine); white-space: nowrap; }
 .product-select-caret { color: var(--wine); }
 .product-select-list { position: absolute; z-index: 30; top: calc(100% + 2px); left: 0; right: 0; max-height: 280px; overflow-y: auto; margin: 0; padding: 4px 0; list-style: none; background: #fff; box-shadow: 0 8px 22px rgba(55, 4, 20, .22); }
 .product-select-option { display: flex; align-items: center; gap: 10px; padding: 6px 10px; cursor: pointer; }
