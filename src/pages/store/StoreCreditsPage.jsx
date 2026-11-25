@@ -49,8 +49,18 @@ function isEligibleForCredit(record, policy) {
   return Boolean(policy) && record.client.active === true && !hasActiveCredit(record)
 }
 
-function maxMonthsFor(policy) {
-  return Math.max(1, Number(policy?.plazoMaximoMeses || 4))
+function maxPeriodsFor(policy) {
+  return Math.max(1, Number(policy?.plazoMaximoMeses || 4)) * PERIODS_PER_MONTH
+}
+
+function periodsLabel(periods) {
+  const wholeMonths = Math.floor(periods / PERIODS_PER_MONTH)
+  const halfMonth = periods % PERIODS_PER_MONTH === 1
+  let duration
+  if (wholeMonths === 0) duration = 'medio mes'
+  else if (halfMonth) duration = `${wholeMonths} ${wholeMonths === 1 ? 'mes' : 'meses'} y medio`
+  else duration = `${wholeMonths} ${wholeMonths === 1 ? 'mes' : 'meses'}`
+  return `${periods} ${periods === 1 ? 'periodo' : 'periodos'} de 15 días (${duration})`
 }
 
 function friendlyCreditError(error, policy, client, principal) {
@@ -76,7 +86,9 @@ function friendlyCreditError(error, policy, client, principal) {
       : 'El monto del crédito no está dentro de lo permitido por la tienda. Revisa la política de crédito.'
   }
   if (message.includes('moratoria debe ser mayor')) {
-    return 'La TEA moratoria debe ser mayor a 0.'
+    return policy
+      ? `La TEA moratoria debe ser mayor a ${percentLabel(policy.teaMaxima)}, la TEA máxima permitida por la tienda.`
+      : 'La TEA moratoria debe ser mayor a la TEA máxima permitida por la tienda.'
   }
   if (message.includes('no otorga periodos de gracia')) {
     return 'La política de la tienda no permite periodos de gracia. Elige 0 periodos de gracia.'
@@ -89,10 +101,10 @@ function friendlyCreditError(error, policy, client, principal) {
       ? `Este cliente tiene un límite de crédito de ${money(client.limiteCredito)}. Reduce el monto a financiar para continuar.`
       : 'El monto solicitado supera el límite de crédito del cliente. Reduce el importe para continuar.'
   }
-  if (message.includes('plazo maximo') || message.includes('numero de meses supera')) {
+  if (message.includes('plazo maximo') || message.includes('numero de periodos')) {
     return policy
-      ? `La política de la tienda permite como máximo ${policy.plazoMaximoMeses} meses. Elige un plazo más corto.`
-      : 'El plazo seleccionado supera el máximo permitido por la tienda. Elige menos meses.'
+      ? `La política de la tienda permite como máximo ${maxPeriodsFor(policy)} periodos de 15 días (${policy.plazoMaximoMeses} meses). Elige un plazo más corto.`
+      : 'El plazo seleccionado supera el máximo permitido por la tienda. Elige menos periodos.'
   }
   if (message.includes('credito en cuotas activo')) {
     return 'Este cliente ya tiene un crédito activo. Debe terminar de pagarlo antes de solicitar otro.'
@@ -146,7 +158,7 @@ function emptyCredit() {
     clientId: '',
     purchaseDate: today(),
     paymentMode: 'INSTALLMENTS',
-    numeroMeses: 4,
+    numeroPeriodos: 8,
     teaPactada: DEFAULT_TEA,
     teaMoratoriaPactada: DEFAULT_TEA_MORATORIA,
     periodosGracia: 0,
@@ -159,7 +171,7 @@ function formFromPlan(plan) {
     clientId: String(plan.clientId),
     purchaseDate: plan.purchaseDate || today(),
     paymentMode: 'INSTALLMENTS',
-    numeroMeses: plan.numeroMeses,
+    numeroPeriodos: plan.installmentCount,
     teaPactada: asPercent(plan.teaPactada),
     teaMoratoriaPactada: asPercent(plan.teaMoratoriaPactada),
     periodosGracia: plan.periodosGracia ?? 0,
@@ -171,7 +183,7 @@ const FIELD_LABELS = {
   purchaseDate: 'fecha de compra',
   teaPactada: 'TEA',
   teaMoratoriaPactada: 'TEA moratoria',
-  numeroMeses: 'duración',
+  numeroPeriodos: 'duración',
   periodosGracia: 'periodos de gracia',
   items: 'productos'
 }
@@ -187,7 +199,7 @@ function changedFields(form, original) {
 function normalizeForm(form) {
   return JSON.stringify({
     purchaseDate: form.purchaseDate,
-    numeroMeses: Number(form.numeroMeses),
+    numeroPeriodos: Number(form.numeroPeriodos),
     teaPactada: Number(form.teaPactada),
     teaMoratoriaPactada: Number(form.teaMoratoriaPactada),
     periodosGracia: Number(form.periodosGracia),
@@ -196,10 +208,10 @@ function normalizeForm(form) {
 }
 
 function buildTerms(form, policy) {
-  const months = Number(form.numeroMeses)
-  const maximumMonths = maxMonthsFor(policy)
-  if (!Number.isInteger(months) || months < 1 || months > maximumMonths) {
-    throw new Error(`Puedes elegir un plazo de 1 a ${maximumMonths} meses.`)
+  const totalPeriods = Number(form.numeroPeriodos)
+  const maximumPeriods = maxPeriodsFor(policy)
+  if (!Number.isInteger(totalPeriods) || totalPeriods < 1 || totalPeriods > maximumPeriods) {
+    throw new Error(`Puedes elegir un plazo de 1 a ${maximumPeriods} periodos de 15 días.`)
   }
 
   const tea = Number(form.teaPactada)
@@ -217,15 +229,17 @@ function buildTerms(form, policy) {
   if (moratory <= 0) {
     throw new Error('La TEA moratoria debe ser mayor a 0.')
   }
+  if (policy && moratory <= asPercent(policy.teaMaxima)) {
+    throw new Error(`La TEA moratoria debe ser mayor a ${percentLabel(policy.teaMaxima)}, la TEA máxima permitida por la tienda.`)
+  }
 
   const grace = Number(form.periodosGracia)
-  const totalPeriods = months * PERIODS_PER_MONTH
   if (!Number.isInteger(grace) || grace < 0 || grace > MAX_GRACE_PERIODS || grace >= totalPeriods) {
     throw new Error('Los periodos de gracia deben estar entre 0 y 3 y ser menos que el total de periodos.')
   }
 
   return {
-    numeroMeses: months,
+    numeroPeriodos: totalPeriods,
     teaPactada: asDecimal(tea),
     teaMoratoriaPactada: asDecimal(moratory),
     periodosGracia: grace
@@ -255,8 +269,8 @@ function buildItems(items, availableProducts) {
 }
 
 function CreditTermsFields({ form, onChange, policy }) {
-  const maximumMonths = maxMonthsFor(policy)
-  const totalPeriods = Number(form.numeroMeses) * PERIODS_PER_MONTH
+  const maximumPeriods = maxPeriodsFor(policy)
+  const totalPeriods = Number(form.numeroPeriodos)
   const graceAllowed = policy ? policy.otorgaGracia !== false : true
   const maxGrace = graceAllowed ? Math.min(MAX_GRACE_PERIODS, Math.max(0, totalPeriods - 1)) : 0
   const graceOptions = Array.from({ length: maxGrace + 1 }, (_, value) => value)
@@ -287,23 +301,26 @@ function CreditTermsFields({ form, onChange, policy }) {
           onChange={event => onChange({ teaMoratoriaPactada: event.target.value })}
           required
         />
+        {policy && (
+          <small className="field-hint">Debe ser mayor a la TEA máxima de la tienda ({percentLabel(policy.teaMaxima)}).</small>
+        )}
       </label>
       <label>
         Duración
         <select
-          value={form.numeroMeses}
+          value={form.numeroPeriodos}
           onChange={event => {
-            const numeroMeses = Number(event.target.value)
-            const limit = Math.min(MAX_GRACE_PERIODS, numeroMeses * PERIODS_PER_MONTH - 1)
+            const numeroPeriodos = Number(event.target.value)
+            const limit = Math.min(MAX_GRACE_PERIODS, numeroPeriodos - 1)
             onChange({
-              numeroMeses,
+              numeroPeriodos,
               periodosGracia: Math.min(Number(form.periodosGracia), Math.max(0, limit))
             })
           }}
         >
-          {Array.from({ length: maximumMonths }, (_, index) => index + 1).map(value => (
+          {Array.from({ length: maximumPeriods }, (_, index) => index + 1).map(value => (
             <option key={value} value={value}>
-              {value} {value === 1 ? 'mes' : 'meses'} ({value * PERIODS_PER_MONTH} periodos de 15 días)
+              {periodsLabel(value)}
             </option>
           ))}
         </select>
